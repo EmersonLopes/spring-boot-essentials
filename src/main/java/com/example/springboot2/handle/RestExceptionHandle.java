@@ -2,12 +2,17 @@ package com.example.springboot2.handle;
 
 import com.example.springboot2.exception.BadRequestException;
 import com.example.springboot2.exception.BadRequestExceptionDetails;
+import com.example.springboot2.exception.ValidationExceptionDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class RestExceptionHandle {
@@ -21,6 +26,27 @@ public class RestExceptionHandle {
                         .title("Bad Request Exception. Check the Documentation")
                         .details(badRequestException.getMessage())
                         .developerMessage(badRequestException.getClass().getName())
+                        .build(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ValidationExceptionDetails> handlermethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException) {
+
+        List<FieldError> fieldErrors = methodArgumentNotValidException.getBindingResult().getFieldErrors();
+        String fields = fieldErrors.stream().map((field) -> field.getField()).collect(Collectors.joining(", "));
+        String fieldsMessage = fieldErrors.stream().map((field) -> field.getDefaultMessage()).collect(Collectors.joining(", "));
+
+        return new ResponseEntity<>(
+                ValidationExceptionDetails.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .title("Bad Request Exception. Check the Documentation")
+                        .details(methodArgumentNotValidException.getMessage())
+                        .developerMessage(methodArgumentNotValidException.getClass().getName())
+                        .fields(fields)
+                        .fieldsMessage(fieldsMessage)
                         .build(),
                 HttpStatus.BAD_REQUEST
         );
