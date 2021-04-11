@@ -12,7 +12,7 @@ import java.util.List;
 @Log4j2
 public class SpringClient {
     public static void main(String[] args) {
-        ResponseEntity<Anime> entity = new RestTemplate().getForEntity("http://localhost:8080/animes/2", Anime.class);
+        /*ResponseEntity<Anime> entity = new RestTemplate().getForEntity("http://localhost:8080/animes/2", Anime.class);
         log.info(entity);
 
         Anime object = new RestTemplate().getForObject("http://localhost:8080/animes/2", Anime.class);
@@ -33,7 +33,7 @@ public class SpringClient {
         kingdom.setName("Kingdom");
 
         Anime kingdomSaved = new RestTemplate().postForObject("http://localhost:8080/animes", kingdom, Anime.class);
-        log.info("Anime saved {}",kingdomSaved);
+        log.info("Anime saved {}",kingdomSaved);*/
 
 
         Anime samurai = new Anime();
@@ -45,6 +45,27 @@ public class SpringClient {
                 Anime.class);
 
         log.info("Samura saved {}",samuraiSaved);
+
+//        PUT
+        Anime samuraToUpdate = samuraiSaved.getBody();
+        samuraToUpdate.setName("Samurai Champploo 2");
+
+        ResponseEntity<Void> samuraiUpdated = new RestTemplate().exchange("http://localhost:8080/animes/",
+                HttpMethod.PUT,
+                new HttpEntity<>(samuraToUpdate, createJsonHeader()),
+                Void.class);
+
+        log.info(samuraiUpdated);
+
+
+//        DELETE
+        ResponseEntity<Void> samuraiDeleted = new RestTemplate().exchange("http://localhost:8080/animes/{id}",
+                HttpMethod.DELETE,
+                null,
+                Void.class,
+                samuraToUpdate.getId());
+
+        log.info(samuraiDeleted);
     }
 
     private static HttpHeaders createJsonHeader(){
